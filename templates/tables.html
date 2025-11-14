@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+        <title>土司三明治</title>
+    </head>
+
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <div class="container-fluid">
+            <a style="color: #1a8755 ; font-weight: 900" class="navbar-brand" href="/">土司三明治</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" >
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item" style="margin-left: 25px">
+                      <div class="col d-flex justify-content-center">
+                        <nav aria-label="Page navigation example">
+                          <ul class="pagination mb-0">
+                            <select class="form-select" id="inputGroupSelect01"
+                                    onchange="if(this.value){ window.location.href='/?annotator=' + this.value; }">
+                              <option value="" selected>選擇標註者</option>
+                              <option value="1">01</option>
+                              <option value="2">02</option>
+                              <option value="3">03</option>
+                              <option value="4">04</option>
+                              <option value="5">05</option>
+                              <option value="6">06</option>
+                              <option value="7">07</option>
+                              <option value="8">08</option>
+                              <option value="9">09</option>
+                              <option value="10">10</option>
+                              <option value="11">11</option>
+                              <option value="12">12</option>
+                            </select>
+                          </ul>
+                        </nav>
+                      </div>
+                    </li>
+                </ul>
+                <button class="btn btn-outline-success" onclick="info()">標註說明</button>
+
+              </div>
+            </div>
+        </nav>
+
+        <table class="table table-hover w-100" style="table-layout: fixed; font-size: 12px;">
+          <tbody id="history">
+
+          {% for data in rows %}
+          <tr id="{{ data.id }}">
+
+            <th style="width:120px" scope="row">{{ data.id }}</th>
+
+            <td style="width: 120px;; padding: 2px 4px;">
+              <img style="width:70px" src="{{ data.image_url|escape }}" alt="">
+            </td>
+
+            <td style="width: 120px; padding: 2px 4px;">{{ data.query }}</td>
+            <td>{{ data.IT_NAME }}</td>
+
+            {% for ann in data.annotators %}
+              {% with ann_id=ann.annotator|default:ann %}
+                {% if ann_id == annotator %}
+                  <td style="width: 120px; padding: 2px 4px;">
+                    <input
+                          style="width: 72.5px;
+                                 height: 30px;
+                                 border: 1px solid #aaa6a6;
+                                 border-radius: 10px;"
+                          type="text"
+                          id="{{ data.id }}-{{ ann_id }}"
+                          {% if ann.rating is not None and ann.relation %}
+                              value="{{ ann.rating }}{{ ann.relation }}"
+                          {% else %}
+                              placeholder=" 請進行標註"
+                          {% endif %}
+                    >
+                    </input>
+                  </td>
+                {% else %}
+                  <td style="width: 120px; padding: 2px 4px;">
+                    {% if ann.rating is not None and ann.relation %}
+                      {{ ann.rating }}{{ ann.relation }}
+                    {% else %}
+                      尚未標註
+                    {% endif %}
+                  </td>
+                {% endif %}
+              {% endwith %}
+            {% endfor %}
+
+          </tr>
+          {% endfor %}
+
+          </tbody>
+        </table>
+
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+          <div class="offcanvas-header">
+            <h3 id="offcanvasRightLabel"></h3>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+
+          </div>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script>
+      function info(){
+
+            Swal.fire({
+                width: 800,
+                html: `
+                    <div style="text-align:left;color: black">
+                      <div>
+                        <h5>商品與查詢文字之間的相關程度</h5>
+                        <p>4 分，完全符合。例如，查詢「iPhone 15 Pro 256G」，商品為「Apple iPhone 15 Pro 256GB 藍色」</p>
+                        <p>3 分，高度相關。例如，查詢「母親節禮物」，商品為「康乃馨花束」。</p>
+                        <p>2 分，中度相關。例如，查詢「冰箱」，商品為「冰箱專用保鮮盒」。</p>
+                        <p>1 分，模糊相關。例如，查詢「Iphone 15」，商品為「行動電源 (適用iphone 15)」。</p>
+                        <p>0 分，無關。例如，查詢「美國隊長」，商品為「理財周刊第837期：美國隊長再發威 (電子書)」。</p>
+                      </div>
+                      <div>
+                        <h5>商品與查詢文字之間的關係</h5>
+                        <p>Exact (E)：完全符合。例如，查詢「塑膠水瓶」，商品為「塑膠水瓶 24oz」。</p>
+                        <p>Substitute (S)：替代品。例如，查詢「毛衣」，商品為「刷毛上衣」。</p>
+                        <p>Complement (C)：互補品。例如，查詢「Iphone」，商品為「Iphone手機殼」。</p>
+                        <p>Irrelevant (I)：無關。例如，查詢「餐具」，商品為「襪子」。</p>
+                      </div>
+                    </div>
+                    <hr style="margin-top: 40px;margin-bottom: 20px">
+                    <div style="display: flex">
+                        <div style="padding: 20px">
+                            <img src=/static/info.png  style="width: 195px"/>
+                        </div>
+                        <div style="text-align: left;padding: 20px;">
+                            <p><strong style="color: #1a8755">吐司三明治</strong> : 一種三明治料理，做法是在兩片未烤的吐司之間夾一片烤吐司</p>
+                            <p><strong style="color: #1a8755">起源地</strong> : 英國</p>
+                            <p><strong style="color: #1a8755">主要成分</strong> : 吐司、烤吐司</p>
+                        </div>
+
+                    </div>
+                  `,
+                  showConfirmButton: false,
+
+                });
+        }
+
+        // 收集目前表格中所有「有填值」的 input，送到後端
+        function collectAndSendAnnotations() {
+            const inputs = document.querySelectorAll('#history input[type="text"]');
+            const items = [];
+
+            inputs.forEach((input) => {
+                const value = input.value.trim().toUpperCase();
+                if (!value) return;  // 沒寫的不要送
+
+                const parts = input.id.split('-');
+                if (parts.length !== 2) return;
+
+                const taskId = parts[0];
+                const annotator = parts[1];
+
+                items.push({
+                    task_id: taskId,
+                    annotator: annotator,
+                    value: value,
+                });
+            });
+
+            if (!items.length) {
+                console.log('沒有要送的標註');
+                return;
+            }
+
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ items: items }),
+            })
+            .then((res) => res.json().catch(() => ({})))
+            .then((data) => {
+                console.log('送出結果', data);
+            })
+            .catch((err) => {
+                console.error('送出失敗', err);
+            });
+        }
+
+        // 監聽所有 input，在按下 Enter 時觸發送出
+        document.addEventListener('DOMContentLoaded', function () {
+            const inputs = document.querySelectorAll('#history input[type="text"]');
+            inputs.forEach((input) => {
+                input.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        collectAndSendAnnotations();
+                    }
+                });
+            });
+        });
+
+        const next_task_id = {{ next_task_id }};
+  </script>
+</html>
